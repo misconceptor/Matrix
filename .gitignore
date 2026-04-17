@@ -1,2 +1,39 @@
+# Gradle build output
+build/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+gradle-app.log
+
+# Local configuration
+local.properties
+gradle-local.properties
+
+# Compiled files
 *.class
-*.txt
+*.jar
+*.war
+*.ear
+
+# Backup files
+*.bak
+*.tmp
