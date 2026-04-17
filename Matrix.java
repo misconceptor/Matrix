@@ -8,6 +8,7 @@ import java.nio.file.*;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.Math;
+import java.util.function.BiFunction;
 //exceptions
 //transpose, + - *
 //equals
@@ -15,6 +16,7 @@ import java.lang.Math;
 public class Matrix{
     private final int R, C;
     private int [][] data;
+
     public int getRows() { return R; }
     public int getColumns() { return C; }
     public int get(int _R, int _C) {
@@ -91,11 +93,19 @@ public class Matrix{
             }
         );
     }
-    public Matrix add(Matrix other) { 
+    public Matrix add (Matrix other) {
+        return operate(other, (a, b) -> a + b);
+    }
+    public Matrix subtract (Matrix other) {
+        return operate(other, (a, b) -> a - b);
+    }
+    public Matrix operate (Matrix other, BiFunction<Integer, Integer, Integer> operation ) { 
         if(R != other.getRows() || C != other.getColumns()) throw new IllegalArgumentException("non-compatible");
-        int[][] _data = 
-        IntStream
+        int[][] _data = IntStream.range(0, R)
+        .mapToObj(i -> IntStream.range(0, C)
+        .map(j -> operation.apply(data[i][j], other.get(i, j))).toArray())
+        .toArray(int[][]::new);
 
-        
+        return new Matrix(_data); 
     }
 }
