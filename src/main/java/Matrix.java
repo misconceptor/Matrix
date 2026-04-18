@@ -1,88 +1,151 @@
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.stream.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.nio.file.*;
-import java.io.FileReader;
 import java.io.IOException;
-import java.lang.Math;
+import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.io.BufferedReader;
 //exceptions
-//transpose, + - *
+//transpose
 //equals
 //swap_rows
-public class Matrix{
+public class Matrix <T extends Number> {
     private final int R, C;
-    private int [][] data;
+    private T [][] data;
+    private final Class <T> type;
 
     public int getRows() { return R; }
     public int getColumns() { return C; }
-    public int get(int _R, int _C) {
+
+    public T get(int _R, int _C) {
         if(_R >= 0 && _R < R && _C >= 0 && _C < C) {
             return data[_R][_C]; 
         }
-        return 0;
+        throw new IndexOutOfBoundsException();
     }
-    public void set(int _R, int _C, int value) {
+    public void set(int _R, int _C, T value) {
         if(_R >= 0 && _R < R && _C >= 0 && _C < C) {
             data[_R][_C] = value;
         }
     }
-    public Matrix() {
-        R = C = 0;
-        data = null;
+    // public Matrix() {
+    //     R = C = 0;
+    //     data = null;
+    // }
+    public Matrix(Class<T> type, int N){
+        this(type, N, N);
     }
-    public Matrix(int N){
-        R = C = N;
-        data = new int[N][N];
-    }
-    public Matrix(int _R, int _C) {
+
+    @SuppressWarnings("unchecked")
+    public Matrix(Class<T> _type, int _R, int _C) {
+        type = _type;
         R = _R;
         C = _C;
-        data = new int[R][C];
+        data = (T[][]) Array.newInstance(type, R, C);
+        // data = new T[R][C];
     }
-    public Matrix(Matrix other) {
-        R = other.getRows(); 
-        C = other.getColumns();
-        data = new int[R][C];
+
+    @SuppressWarnings("unchecked")
+    public Matrix(Matrix<T> other) {
+        R = other.R; 
+        C = other.C;
+        this.type = other.type;
+        data = (T[][]) Array.newInstance(type, R, C);
+        // data = new int[R][C];
         for(int i = 0; i < R; ++i) {
             data[i] = Arrays.copyOf(other.data[i], C);
         }
     }
-    public Matrix(int[][] arr) { // need exception when arr is not rectangular
-        R = arr.length;
-        C = arr[0].length;
-        data = new int[R][C]; 
-        for(int i = 0; i < R; ++i) {
-            data[i] = Arrays.copyOf(arr[i], C);
-        }
+    // public Matrix(int[][] arr) { // need exception when arr is not rectangular
+    //     R = arr.length;
+    //     C = arr[0].length;
+    //     data = new int[R][C]; 
+    //     for(int i = 0; i < R; ++i) {
+    //         data[i] = Arrays.copyOf(arr[i], C);
+    //     }
+    // }
+    @SuppressWarnings("unchecked")
+    public Matrix(Class<T> type, BufferedReader reader, Function<String, T> parser) throws IOException {
+        this.type = type;
+        this.data = reader.lines()
+        // T[][] temp = Files.lines(Paths.get(filename))
+                .filter(line -> !line.trim().isEmpty())
+                .map(line -> Arrays.stream(line.trim().split("\\s+"))
+                        .map(parser)
+                        .toArray(size -> (T[]) Array.newInstance(type, size)))
+                .toArray(size -> (T[][]) Array.newInstance(type, size, 0));
+        this.R = data.length;
+        this.C = (R > 0) ? data[0].length : 0;
+        reader.close();
     }
-    public Matrix(String filename) throws IOException {
-        data = Files.lines(Paths.get(filename)) 
-            .filter(line -> !line.trim().isEmpty())
-            .map(line -> Arrays.stream(line.trim().split(" "))
-            .mapToInt(Integer::parseInt)
-            .toArray())
-            .toArray(int[][]::new);
-        R = data.length;
-        C = data[0].length;
-    }
-    public static Matrix diag (int ... args) {
+
+    public static <T extends Number> Matrix <T>  diag (Class<T> type, Algebra<T> alg, T... args) {
         int N = args.length;
-        Matrix m = new Matrix(N);
-        for(int i = 0; i < N; ++i) {
+        Matrix<T> m = new Matrix<>(type, N);
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                m.set(i, j, alg.zero());
+            }
             m.set(i, i, args[i]);
         }
         return m;
     }
-    public static Matrix identity (int N) {
-        int[] a = new int[N];
-        Arrays.fill(a, 1);
-        Matrix i = Matrix.diag(a);
-        return i;
+
+    public static <T extends Number> Matrix <T> identity (Class<T> type, Algebra<T> alg, int N) {
+        Matrix<T> m = new Matrix<>(type, N);
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                m.set(i, j, alg.zero());
+            }
+            m.set(i, i, alg.one());
+        }
+        return m;
     } 
+
+    public Matrix <T> add (Matrix <T> other, Algebra<T> alg) {
+        return operate(other, alg::add);
+    }
+
+    public Matrix <T> subtract (Matrix <T> other, Algebra<T> alg) {
+        return operate(other, alg::subtract);
+    }
+
+    public Matrix <T> multiply (Matrix <T> other, Algebra<T> alg) {
+        if(C != other.R) throw new IllegalArgumentException("incompatible dimensions");
+        Matrix <T> res = new Matrix<>(type, R, other.C);
+        for (int i = 0; i < R; ++i) {
+            for (int j = 0; j < other.C; ++j) {
+                T sum = alg.zero();
+                for (int k = 0; k < this.C; ++k) {
+                    T product = alg.multiply(this.get(i, k), other.get(k, j));
+                    sum = alg.add(sum, product); 
+                }
+                res.set(i, j, sum);
+            }
+        }
+        return res;
+    }
+
+    public Matrix<T> transpose() {
+        Matrix<T> res = new Matrix<>(type, C, R);
+        for (int i = 0; i < R; i++) {
+            for (int j = 0; j < C; j++) res.set(j, i, get(i, j));
+        }
+        return res;
+    }
+
+    public Matrix <T> operate (Matrix <T> other, BiFunction<T, T, T> operation ) { 
+        if (R != other.getRows() || C != other.getColumns()) throw new IllegalArgumentException("incompatible");
+        Matrix <T> res = new Matrix<>(type, R, C); 
+        for (int i = 0; i < R; ++i) {
+            for (int j = 0; j < C; ++j) {
+                res.set(i, j, operation.apply(this.data[i][j], other.data[i][j]));
+            }
+        }
+        return res;
+    }
+
     public void printMatrix() {
         Arrays.stream(data).forEach(
             row -> {
@@ -92,20 +155,5 @@ public class Matrix{
                 System.out.println();
             }
         );
-    }
-    public Matrix add (Matrix other) {
-        return operate(other, (a, b) -> a + b);
-    }
-    public Matrix subtract (Matrix other) {
-        return operate(other, (a, b) -> a - b);
-    }
-    public Matrix operate (Matrix other, BiFunction<Integer, Integer, Integer> operation ) { 
-        if(R != other.getRows() || C != other.getColumns()) throw new IllegalArgumentException("non-compatible");
-        int[][] _data = IntStream.range(0, R)
-        .mapToObj(i -> IntStream.range(0, C)
-        .map(j -> operation.apply(data[i][j], other.get(i, j))).toArray())
-        .toArray(int[][]::new);
-
-        return new Matrix(_data); 
     }
 }

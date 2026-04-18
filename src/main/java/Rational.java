@@ -2,6 +2,27 @@ import java.math.BigInteger;
 
 public class Rational extends Number {
 
+    public class RationalAlgebra implements Algebra <Rational> {
+        @Override public Rational add (Rational a, Rational b) {
+            return a.add(b); 
+        }
+        @Override public Rational subtract (Rational a, Rational b) {
+            return a.subtract(b);
+        }
+        @Override public Rational multiply (Rational a, Rational b) {
+            return a.multiply(b);
+        }
+        @Override public Rational divide (Rational a, Rational b) {
+            return a.divide(b);
+        }
+        @Override public Rational zero() {
+            return new Rational(0);
+        }
+        @Override public Rational one() {
+            return new Rational(1);
+        }
+    }
+
     private BigInteger num, denom;
 
     private void normalize () {
@@ -31,9 +52,14 @@ public class Rational extends Number {
         denom = _denom;
         normalize();
     }
+    public Rational (BigInteger _num) {
+        this(_num, BigInteger.ONE);
+    }
     public Rational (int _num) {
-        num = BigInteger.valueOf(_num);
-        denom = BigInteger.ONE;
+        this(_num, 1);
+    }
+    public Rational (Rational other) {
+        this(other.num, other.denom);
     }
     public Rational negate() {
         return new Rational(num.negate(), denom);
