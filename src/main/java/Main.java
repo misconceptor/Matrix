@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.util.Scanner;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -6,6 +7,13 @@ import java.io.InputStreamReader;
 
 public class Main {
     public static void main(String[] args) {
+        String s;
+        Scanner sc = new Scanner(System.in);
+        s = sc.next();
+        Rational r = new Rational(s);
+        System.out.println(r.toString());
+    }
+    public void testMultiply(){
         InputStream is = Main.class.getClassLoader()
         .getResourceAsStream("in1.txt");
         InputStream is2 = Main.class.getClassLoader()

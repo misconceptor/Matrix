@@ -1,8 +1,9 @@
+// package com.example.myapp.testfx;
 import java.math.BigInteger;
 
 public class Rational extends Number {
 
-    public class RationalAlgebra implements Algebra <Rational> {
+    static class RationalAlgebra implements Algebra <Rational> {
         @Override public Rational add (Rational a, Rational b) {
             return a.add(b); 
         }
@@ -61,6 +62,25 @@ public class Rational extends Number {
     public Rational (Rational other) {
         this(other.num, other.denom);
     }
+    public Rational(String s) {
+        s = s.trim();
+        if(s.contains("/")) {
+            String[] p = s.split("/");
+            if(p.length != 2) {
+                throw new NumberFormatException("Invalid format");
+            }
+            this.num = new BigInteger(p[0].trim());
+            this.denom = new BigInteger(p[1].trim());
+        } else {
+            this.num = new BigInteger(s.trim());
+            this.denom = BigInteger.ONE;
+        }
+        if(this.denom.equals(BigInteger.ZERO)) {
+            throw new ArithmeticException("Zero denominator");
+        }
+        normalize();
+    }
+
     public Rational negate() {
         return new Rational(num.negate(), denom);
     }
@@ -100,7 +120,6 @@ public class Rational extends Number {
     public int hashCode() {
         return 31 * num.hashCode() + denom.hashCode();
     }
-
     @Override
     public int intValue() {
         return num.divide(denom).intValue();
