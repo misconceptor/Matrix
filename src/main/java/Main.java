@@ -1,18 +1,38 @@
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.Scanner;
+
+// import Rational.RationalAlgebra;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 
 
 public class Main {
     public static void main(String[] args) {
-        String s;
-        Scanner sc = new Scanner(System.in);
-        s = sc.next();
-        Rational r = new Rational(s);
-        System.out.println(r.toString());
+        InputStream is = Main.class.getClassLoader().getResourceAsStream("in1.txt");
+        try{
+            if(is == null) {
+                System.err.println("file not found in folder"); 
+                return;
+            }
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+            Matrix <Rational> m = new Matrix<>(Rational.class, br, Rational::new);
+            m.printMatrix();
+            Algebra<Rational> alg = new Rational.RationalAlgebra();
+
+            System.out.println("\n======matrix=======\n");
+            m = m.rref(alg);
+            m.printMatrix();
+        } catch (IOException e) {
+            System.err.println("ERROR READING FILE " + e.getMessage());
+        }
+
     }
+
     public void testMultiply(){
         InputStream is = Main.class.getClassLoader()
         .getResourceAsStream("in1.txt");

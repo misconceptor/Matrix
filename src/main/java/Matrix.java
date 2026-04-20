@@ -1,11 +1,9 @@
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.io.BufferedReader;
 //exceptions
 //transpose
 //equals
@@ -135,6 +133,12 @@ public class Matrix <T extends Number> {
         return res;
     }
 
+    public void swapRows(int i, int j) {
+        T[] tmp = data[i];
+        data[i] = data[j]; 
+        data[j] = tmp;
+    }
+
     public Matrix <T> operate (Matrix <T> other, BiFunction<T, T, T> operation ) { 
         if (R != other.getRows() || C != other.getColumns()) throw new IllegalArgumentException("incompatible");
         Matrix <T> res = new Matrix<>(type, R, C); 
@@ -146,6 +150,38 @@ public class Matrix <T extends Number> {
         return res;
     }
 
+    public Matrix<T> rref(Algebra<T> alg) {
+        Matrix<T> ans = new Matrix<>(this);
+        int pivot = 0;
+        for (int r = 0; r < ans.R; ++r) {
+            if (pivot >= ans.C) break;
+            int i = r;
+            while (ans.get(i, pivot).equals(alg.zero())) {
+                i++;
+                if (i == ans.R) {
+                    i = r;
+                    pivot++;
+                    if (pivot == ans.C) return ans;
+                }
+            }
+            ans.swapRows(i, r);
+            T lv = ans.get(r, pivot);
+            for (int j = 0; j < ans.C; ++j) {
+                ans.set(r, j, alg.divide(ans.get(r, j), lv));
+            }
+            for (int k = 0; k < ans.R; ++k) {
+                if (k != r) {
+                    T factor = ans.get(k, pivot);
+                    for (int j = 0; j < ans.C; ++j) {
+                        T sub = alg.multiply(factor, ans.get(r, j));
+                        ans.set(k, j, alg.subtract(ans.get(k, j), sub));
+                    }
+                }
+            }
+            ++pivot;
+        }
+        return ans;
+    }
     public void printMatrix() {
         Arrays.stream(data).forEach(
             row -> {
