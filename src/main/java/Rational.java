@@ -1,11 +1,11 @@
-// package com.example.myapp.testfx;
+package com.example.myapp.testfx;
 import java.math.BigInteger;
 
 public class Rational extends Number {
 
     static class RationalAlgebra implements Algebra <Rational> {
         @Override public Rational add (Rational a, Rational b) {
-            return a.add(b); 
+            return a.add(b);
         }
         @Override public Rational subtract (Rational a, Rational b) {
             return a.subtract(b);
@@ -107,7 +107,7 @@ public class Rational extends Number {
     @Override
     public String toString() {
         if (denom.equals(BigInteger.ONE)) return num.toString();
-        return num.toString() + " / " + denom.toString();
+        return num.toString() + "/" + denom.toString();
     }
     @Override
     public boolean equals (Object obj) {
@@ -124,17 +124,17 @@ public class Rational extends Number {
     public int intValue() {
         return num.divide(denom).intValue();
     }
-    
+
     @Override
     public long longValue() {
         return num.divide(denom).longValue();
     }
-    
+
     @Override
     public float floatValue() {
         return num.floatValue() / denom.floatValue();
     }
-    
+
     @Override
     public double doubleValue() {
         return num.doubleValue() / denom.doubleValue();
