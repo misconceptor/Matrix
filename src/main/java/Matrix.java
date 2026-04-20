@@ -73,15 +73,13 @@ public class Matrix <T extends Number> {
         return m;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends Number> Matrix <T> identity (Class<T> type, Algebra<T> alg, int N) {
-        Matrix<T> m = new Matrix<>(type, N);
+        T[] ones = (T[]) java.lang.reflect.Array.newInstance(type, N);
         for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
-                m.set(i, j, alg.zero());
-            }
-            m.set(i, i, alg.one());
-        }
-        return m;
+            ones[i] = alg.one();
+        } 
+        return diag(type, alg, ones);
     }
 
     public Matrix <T> add (Matrix <T> other, Algebra<T> alg) {

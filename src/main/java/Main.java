@@ -12,24 +12,27 @@ import java.io.StringReader;
 
 public class Main {
     public static void main(String[] args) {
-        InputStream is = Main.class.getClassLoader().getResourceAsStream("in1.txt");
-        try{
-            if(is == null) {
-                System.err.println("file not found in folder"); 
-                return;
-            }
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        Algebra<Rational> alg = new Rational.RationalAlgebra();
+        Matrix<Rational> i = Matrix.identity(Rational.class, alg, 9);
+        i.printMatrix();
+        // InputStream is = Main.class.getClassLoader().getResourceAsStream("in1.txt");
+        // try{
+        //     if(is == null) {
+        //         System.err.println("file not found in folder"); 
+        //         return;
+        //     }
+        //     BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
-            Matrix <Rational> m = new Matrix<>(Rational.class, br, Rational::new);
-            m.printMatrix();
-            Algebra<Rational> alg = new Rational.RationalAlgebra();
+        //     Matrix <Rational> m = new Matrix<>(Rational.class, br, Rational::new);
+        //     m.printMatrix();
+        //     Algebra<Rational> alg = new Rational.RationalAlgebra();
 
-            System.out.println("\n======matrix=======\n");
-            m = m.rref(alg);
-            m.printMatrix();
-        } catch (IOException e) {
-            System.err.println("ERROR READING FILE " + e.getMessage());
-        }
+        //     System.out.println("\n======matrix=======\n");
+        //     m = m.rref(alg);
+        //     m.printMatrix();
+        // } catch (IOException e) {
+        //     System.err.println("ERROR READING FILE " + e.getMessage());
+        // }
 
     }
 
